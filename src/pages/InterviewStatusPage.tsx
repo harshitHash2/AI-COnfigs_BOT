@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, RefreshCw, StopCircle, CheckCircle2, Loader2, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, RefreshCw, StopCircle, CheckCircle2, Loader2, Copy, Check, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 import { meetingApi, getMeetingApiErrorDetail } from '@/lib/meetingApi';
 import { useNavigate } from '@/lib/router';
 import { useToast } from '@/components/Toast';
@@ -137,6 +137,11 @@ export const InterviewStatusPage = ({ token }: Props) => {
           {!isTerminal && (
             <Button variant="danger" icon={<StopCircle className="h-4 w-4" />} loading={ending} onClick={endInterview}>
               End Interview
+            </Button>
+          )}
+          {isTerminal && (
+            <Button icon={<FileText className="h-4 w-4" />} onClick={() => navigate('/interview/report', { id: token })}>
+              View Full Report
             </Button>
           )}
           <Button variant="secondary" icon={<RefreshCw className="h-4 w-4" />} onClick={poll}>

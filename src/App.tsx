@@ -5,6 +5,7 @@ import { ListPage } from '@/pages/ListPage';
 import { FormPage } from '@/pages/FormPage';
 import { LaunchWizardPage } from '@/pages/LaunchWizardPage';
 import { InterviewStatusPage } from '@/pages/InterviewStatusPage';
+import { InterviewReportPage } from '@/pages/InterviewReportPage';
 import { PersonaLibraryPage } from '@/pages/PersonaLibraryPage';
 import { PersonaFormPage } from '@/pages/PersonaFormPage';
 import { RubricLibraryPage } from '@/pages/RubricLibraryPage';
@@ -53,6 +54,8 @@ function App() {
     page = <LaunchWizardPage />;
   } else if (path === '/launch/status') {
     page = <InterviewStatusPage token={params.token} />;
+  } else if (path === '/interview/report') {
+    page = <InterviewReportPage platformInterviewId={params.id ?? 'INTV-2026-00142'} />;
   } else if (path === '/settings/personas') {
     page = <PersonaLibraryPage />;
   } else if (path === '/settings/rubrics') {
