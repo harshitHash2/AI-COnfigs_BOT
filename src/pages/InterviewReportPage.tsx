@@ -28,9 +28,11 @@ import { useToast } from '@/components/Toast';
 import type { InterviewReport, Recommendation, LevelAssessment } from '@/types/interviewReport';
 import { ScoreGauge } from '@/components/ScoreGauge';
 import { SkillRadar } from '@/components/SkillRadar';
+import { ScoreZoneBar } from '@/components/ScoreZoneBar';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { PageLoader } from '@/components/ui/Feedback';
+import { ClipboardList, Info } from 'lucide-react';
 
 const RECOMMENDATION_CONFIG: Record<Recommendation, { label: string; bg: string; color: string; border: string }> = {
   strong_hire: { label: 'Strong Hire', bg: '#ECFDF5', color: '#047857', border: '#A7F3D0' },
@@ -159,6 +161,19 @@ export const InterviewReportPage = ({ platformInterviewId }: Props) => {
             <ScoreGauge score={evaluation.technical_score} />
           </div>
         </div>
+        {/* Score Zone Bar */}
+        {evaluation.rubric_verdict && (
+          <div className="mt-2 pt-4 border-t border-slate-100">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-400">Rubric Score Zone</span>
+              {evaluation.rubric_verdict.zone === 'hire' && <Badge bg="#DCFCE7" color="#15803D">{evaluation.rubric_verdict.zone_label}</Badge>}
+              {evaluation.rubric_verdict.zone === 'strong_hire' && <Badge bg="#CCFBF1" color="#0F766E">{evaluation.rubric_verdict.zone_label}</Badge>}
+              {evaluation.rubric_verdict.zone === 'human_review' && <Badge bg="#FFEDD5" color="#C2410C">{evaluation.rubric_verdict.zone_label}</Badge>}
+              {evaluation.rubric_verdict.zone === 'no_hire' && <Badge bg="#FEE2E2" color="#B91C1C">{evaluation.rubric_verdict.zone_label}</Badge>}
+            </div>
+            <ScoreZoneBar verdict={evaluation.rubric_verdict} />
+          </div>
+        )}
       </div>
 
       {/* 2. Verdict & Summary */}
@@ -215,6 +230,92 @@ export const InterviewReportPage = ({ platformInterviewId }: Props) => {
           })}
         </div>
       </div>
+
+      {/* 4b. Rubric Criteria Scores */}
+      {evaluation.rubric_criterion_scores.length > 0 && (
+        <div className="card p-6 flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <ClipboardList className="h-4 w-4 text-slate-400" />
+            <h2 className="text-sm font-semibold text-slate-900">Rubric Criteria Breakdown</h2>
+            {evaluation.rubric_verdict && (
+              <span className="text-xs text-slate-400 ml-auto">
+                Weighted total: <span className="font-semibold text-slate-700">{evaluation.rubric_criterion_scores.reduce((s, c) => s + (c.weighted_contribution ?? 0), 0).toFixed(1)}</span>
+                <span className="mx-1.5 text-slate-300">vs</span>
+                LLM score: <span className="font-semibold text-slate-700">{evaluation.technical_score}</span>
+              </span>
+            )}
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <th className="text-left py-2 pr-4 text-xs font-semibold uppercase tracking-wide text-slate-400">Criterion</th>
+                  <th className="text-right py-2 px-4 text-xs font-semibold uppercase tracking-wide text-slate-400">Weight</th>
+                  <th className="text-left py-2 px-4 text-xs font-semibold uppercase tracking-wide text-slate-400 w-1/3">Avg Score</th>
+                  <th className="text-right py-2 pl-4 text-xs font-semibold uppercase tracking-wide text-slate-400">Contribution</th>
+                </tr>
+              </thead>
+              <tbody>
+                {evaluation.rubric_criterion_scores.map((c) => {
+                  const score = c.average_score;
+                  const hasScore = score !== null;
+                  const barColor = !hasScore ? '#CBD5E1' : (score! >= 85 ? '#0D9488' : score! >= 70 ? '#22C55E' : score! >= 55 ? '#F97316' : '#EF4444');
+                  return (
+                    <tr key={c.criterion_key} className="border-b border-slate-50 last:border-0">
+                      <td className="py-3 pr-4">
+                        <p className="text-sm font-medium text-slate-700">{c.label}</p>
+                      </td>
+                      <td className="py-3 px-4 text-right text-sm text-slate-500">{c.weight_percent}%</td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                            <div className="h-full rounded-full transition-all duration-700" style={{ width: hasScore ? `${score}%` : '0%', backgroundColor: barColor }} />
+                          </div>
+                          <span className="text-xs font-semibold text-slate-600 w-8 text-right">{hasScore ? score : '—'}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 pl-4 text-right">
+                        <span className="text-sm font-semibold text-slate-700">{c.weighted_contribution !== null ? c.weighted_contribution.toFixed(1) : '—'}</span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* 4c. Rubric Thresholds Info */}
+      {config.rubric && (
+        <div className="card p-6 flex flex-col gap-4">
+          <div className="flex items-center gap-2">
+            <Info className="h-4 w-4 text-slate-400" />
+            <h2 className="text-sm font-semibold text-slate-900">Rubric Configuration</h2>
+            <span className="text-xs text-slate-400 ml-auto">{config.rubric.name}</span>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <ThresholdCard label="Passing" value={config.rubric.passing_score} color="#22C55E" />
+            <ThresholdCard label="Strong Hire" value={config.rubric.strong_hire_score} color="#0D9488" />
+            <ThresholdCard label="Review Min" value={config.rubric.human_review_min} color="#F97316" />
+            <ThresholdCard label="Review Max" value={config.rubric.human_review_max} color="#F97316" />
+          </div>
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-2">Criteria Definitions</h3>
+            <div className="flex flex-col gap-2">
+              {config.rubric.criteria.map((c) => (
+                <div key={c.criterion_key} className="flex items-start gap-3 rounded-lg bg-slate-50 px-3 py-2">
+                  <div className="flex items-center gap-2 shrink-0 w-40">
+                    <span className="text-sm font-medium text-slate-700">{c.label}</span>
+                    <Badge bg="#F1F5F9" color="#64748B">{c.weight_percent}%</Badge>
+                  </div>
+                  <p className="text-xs text-slate-500 leading-relaxed flex-1">{c.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 5. Strengths & Gaps */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -455,5 +556,12 @@ const MetaItem = ({ icon, label, value }: { icon: React.ReactNode; label: string
       {icon}{label}
     </span>
     <p className="text-sm text-slate-700 font-mono truncate">{value}</p>
+  </div>
+);
+
+const ThresholdCard = ({ label, value, color }: { label: string; value: number; color: string }) => (
+  <div className="rounded-xl border border-slate-200 p-3 flex flex-col items-center gap-0.5">
+    <span className="text-xl font-bold" style={{ color }}>{value}</span>
+    <span className="text-[11px] text-slate-400 font-medium">{label}</span>
   </div>
 );

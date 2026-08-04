@@ -54,6 +54,23 @@ export interface ReportJD {
   responsibilities: string;
 }
 
+export interface RubricCriterion {
+  criterion_key: string;
+  label: string;
+  weight_percent: number;
+  description: string;
+}
+
+export interface InterviewReportRubricInfo {
+  name: string;
+  interview_type: string;
+  passing_score: number;
+  strong_hire_score: number;
+  human_review_min: number;
+  human_review_max: number;
+  criteria: RubricCriterion[];
+}
+
 export interface ReportConfig {
   interview_type: string;
   interview_level: string;
@@ -63,6 +80,7 @@ export interface ReportConfig {
   persona_name: string;
   persona_display_name: string;
   script_source: string;
+  rubric: InterviewReportRubricInfo | null;
 }
 
 export interface AnswerScores {
@@ -112,6 +130,26 @@ export interface TimelineEvent {
   created_at: string;
 }
 
+export type RubricZone = 'no_hire' | 'human_review' | 'hire' | 'strong_hire';
+
+export interface RubricVerdict {
+  zone: RubricZone;
+  zone_label: string;
+  score: number;
+  passing_score: number;
+  strong_hire_score: number;
+  human_review_min: number;
+  human_review_max: number;
+}
+
+export interface RubricCriterionScore {
+  criterion_key: string;
+  label: string;
+  weight_percent: number;
+  average_score: number | null;
+  weighted_contribution: number | null;
+}
+
 export interface Evaluation {
   technical_score: number;
   recommendation: Recommendation;
@@ -131,6 +169,8 @@ export interface Evaluation {
     problem_solving: number;
     communication: number;
   };
+  rubric_verdict: RubricVerdict | null;
+  rubric_criterion_scores: RubricCriterionScore[];
   webhook_status: string;
   evaluated_at: string;
 }
