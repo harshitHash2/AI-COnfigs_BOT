@@ -15,8 +15,9 @@ import { api, getApiErrorDetail } from '@/lib/api';
 import { TENANT_ID } from '@/lib/config';
 import { useNavigate } from '@/lib/router';
 import { useToast } from '@/components/Toast';
-import type { BehaviorConfigResponse, InterviewType } from '@/types/behaviorConfig';
-import { INTERVIEW_TYPE_OPTIONS, getTypeBadge } from '@/types/behaviorConfig';
+import type { BehaviorConfigResponse } from '@/types/behaviorConfig';
+import { getTypeBadge } from '@/types/behaviorConfig';
+import { useInterviewTypes } from '@/lib/interviewTypesContext';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Select } from '@/components/ui/Field';
@@ -28,12 +29,13 @@ import { Modal } from '@/components/ui/Modal';
 export const ListPage = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const { types } = useInterviewTypes();
   const [systemDefaults, setSystemDefaults] = useState<BehaviorConfigResponse[] | null>(null);
   const [tenantConfigs, setTenantConfigs] = useState<BehaviorConfigResponse[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
-  const [typeFilter, setTypeFilter] = useState<InterviewType | 'all'>('all');
+  const [typeFilter, setTypeFilter] = useState<string | 'all'>('all');
   const [preview, setPreview] = useState<BehaviorConfigResponse | null>(null);
   const [cloneTarget, setCloneTarget] = useState<BehaviorConfigResponse | null>(null);
   const [cloneName, setCloneName] = useState('');
@@ -218,13 +220,13 @@ export const ListPage = () => {
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
             <Select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as InterviewType | 'all')}
+              onChange={(e) => setTypeFilter(e.target.value as string | 'all')}
               className="pl-9"
             >
               <option value="all">All interview types</option>
-              {INTERVIEW_TYPE_OPTIONS.filter((o) => o.value !== null).map((o) => (
-                <option key={o.value} value={o.value!}>
-                  {o.label}
+              {types.map((t) => (
+                <option key={t.id} value={t.slug}>
+                  {t.name}
                 </option>
               ))}
             </Select>

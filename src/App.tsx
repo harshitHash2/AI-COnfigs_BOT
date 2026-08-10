@@ -1,6 +1,7 @@
 import { useHashRoute, navigate } from '@/lib/router';
 import { ToastProvider } from '@/components/Toast';
 import { OptionsProvider } from '@/lib/optionsContext';
+import { InterviewTypesProvider } from '@/lib/interviewTypesContext';
 import { ListPage } from '@/pages/ListPage';
 import { FormPage } from '@/pages/FormPage';
 import { LaunchWizardPage } from '@/pages/LaunchWizardPage';
@@ -10,9 +11,10 @@ import { PersonaLibraryPage } from '@/pages/PersonaLibraryPage';
 import { PersonaFormPage } from '@/pages/PersonaFormPage';
 import { RubricLibraryPage } from '@/pages/RubricLibraryPage';
 import { RubricFormPage } from '@/pages/RubricFormPage';
+import { InterviewTypesPage } from '@/pages/InterviewTypesPage';
 import { API_MODE, isMockMode } from '@/lib/config';
 import type { InterviewType } from '@/types/interviewConfig';
-import { Bot, List, Rocket, Users, ClipboardList, Beaker } from 'lucide-react';
+import { Bot, List, Rocket, Users, ClipboardList, Beaker, Layers } from 'lucide-react';
 
 interface NavItem {
   path: string;
@@ -25,6 +27,7 @@ const NAV: NavItem[] = [
   { path: '/configs', label: 'Behavior Configs', icon: <List className="h-4 w-4" />, matchPrefix: true },
   { path: '/settings/personas', label: 'Personas', icon: <Users className="h-4 w-4" />, matchPrefix: true },
   { path: '/settings/rubrics', label: 'Scoring Rubrics', icon: <ClipboardList className="h-4 w-4" />, matchPrefix: true },
+  { path: '/settings/interview-types', label: 'Interview Types', icon: <Layers className="h-4 w-4" />, matchPrefix: true },
   { path: '/launch', label: 'Launch Interview', icon: <Rocket className="h-4 w-4" />, matchPrefix: true },
 ];
 
@@ -60,6 +63,8 @@ function App() {
     page = <PersonaLibraryPage />;
   } else if (path === '/settings/rubrics') {
     page = <RubricLibraryPage />;
+  } else if (path === '/settings/interview-types') {
+    page = <InterviewTypesPage />;
   } else {
     page = <ListPage />;
   }
@@ -67,6 +72,7 @@ function App() {
   return (
     <ToastProvider>
       <OptionsProvider>
+      <InterviewTypesProvider>
         <div className="min-h-screen flex bg-slate-50">
           {/* Sidebar */}
           <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-slate-200 bg-white">
@@ -146,6 +152,7 @@ function App() {
             </main>
           </div>
         </div>
+      </InterviewTypesProvider>
       </OptionsProvider>
     </ToastProvider>
   );
